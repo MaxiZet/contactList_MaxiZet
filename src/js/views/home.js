@@ -9,9 +9,18 @@ export const Home = () => {
 
   return (
     <div className="text-center mt-5">
-      <h1>Hello Rigo!</h1>
+      <h1>Contact List!</h1>
       {store.contacts.map((item, index) => {
-        return <ContactCard key={index} name={item.name} />;
+        return (
+          <ContactCard
+            key={index}
+            name={item.name}
+            email={"Email: " + item.email}
+            address={"Address: " + item.address}
+            phone={"Phone: " + item.phone}
+            id={item.id}
+          />
+        );
       })}
     </div>
   );

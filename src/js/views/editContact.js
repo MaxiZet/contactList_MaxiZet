@@ -1,11 +1,42 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Context } from "../store/appContext";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
-export const CreateContact = () => {
-  const { actions } = useContext(Context);
+export const EditContact = () => {
+  const { actions, store } = useContext(Context);
   const navigate = useNavigate();
-  const [newContact, setNewContact] = useState({});
+  const emptyContact = { name: "", email: "", phone: "", address: "" };
+  const [contact, setContact] = useState(emptyContact);
+  const { id } = useParams();
+  const isEditing = Boolean(id);
+
+  useEffect(() => {
+    if (isEditing) {
+      const existingContact = store.contacts.find(
+        (contact) => contact.id === parseInt(id)
+      );
+      if (existingContact) {
+        setContact(existingContact);
+      }
+    } else {
+      setContact(emptyContact);
+    }
+  }, [id, store.contacts, isEditing]);
+
+  const handler = async () => {
+    // Validación: Si el nombre está vacío, muestra una alerta y no envía el formulario
+    if (!contact.name.trim()) {
+      alert("Full name cannot be empty");
+      return;
+    }
+
+    if (isEditing) {
+      await actions.editContact(id, contact);
+    } else {
+      await actions.createContact(contact);
+    }
+    navigate("/");
+  };
 
   return (
     <div>
@@ -20,9 +51,9 @@ export const CreateContact = () => {
           </label>
           <input
             onChange={(evento) =>
-              setNewContact({ ...newContact, name: evento.target.value })
+              setContact({ ...contact, name: evento.target.value })
             }
-            value={newContact.name || ""}
+            value={contact.name || ""}
             type="text"
             className="form-control"
           />
@@ -37,9 +68,9 @@ export const CreateContact = () => {
           </label>
           <input
             onChange={(evento) =>
-              setNewContact({ ...newContact, email: evento.target.value })
+              setContact({ ...contact, email: evento.target.value })
             }
-            value={newContact.email || ""}
+            value={contact.email || ""}
             type="email"
             className="form-control"
           />
@@ -57,9 +88,9 @@ export const CreateContact = () => {
           </label>
           <input
             onChange={(evento) =>
-              setNewContact({ ...newContact, phone: evento.target.value })
+              setContact({ ...contact, phone: evento.target.value })
             }
-            value={newContact.phone || ""}
+            value={contact.phone || ""}
             type="phone"
             className="form-control"
           />
@@ -74,9 +105,9 @@ export const CreateContact = () => {
           </label>
           <input
             onChange={(evento) =>
-              setNewContact({ ...newContact, address: evento.target.value })
+              setContact({ ...contact, address: evento.target.value })
             }
-            value={newContact.address || ""}
+            value={contact.address || ""}
             type="text"
             className="form-control"
           />
@@ -84,16 +115,16 @@ export const CreateContact = () => {
 
         <button
           onClick={async () => {
-            await actions.createContact(newContact);
+            await actions.editContact(contact, id);
             navigate("/");
           }}
           type="submit"
-          className="btn btn-success m-2"
+          className={`btn mr-5 ${isEditing ? "btn-warning" : "btn-success"}`}
         >
-          Submit
+          {isEditing ? "Edit" : "Save"}
         </button>
         <Link to="/">
-          <button className="btn btn-success">Back home</button>
+          <button className="btn btn-success m-2">Back home</button>
         </Link>
       </div>
     </div>
